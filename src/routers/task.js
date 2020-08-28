@@ -1,21 +1,29 @@
 const express = require('express')
+const { body } = require('express-validator')
+
 const Task = require('../models/task')
 const auth = require('../middleware/auth')
+const validate = require('../middleware/validate')
 const router = new express.Router()
 
-router.post('/tasks', auth, async (req, res) => {
-    
-    const task = new Task({
-        ...req.body,
-        owner: req.user._id
-    })
+router.post('/tasks',
+    auth,
+    validate([
+        body('description')
+            .trim()
+            .not().isEmpty().withMessage('The description field is required'),
+    ]),
+    async (req, res) => {
+        const task = new Task({
+            ...req.body,
+            owner: req.user._id
+        })
 
-    try {
         await task.save()
-        res.status(201).send(task)
-    } catch (e) {
-        res.status(400).send(e)
-    }
+        res.status(201).json({
+            message: 'Task created successfully',
+            task: task
+        })
 })
 
 router.get('/tasks', auth, async (req, res) => {
@@ -57,9 +65,13 @@ router.get('/tasks/:id', auth, async (req, res) => {
         const task = await Task.findOne({ _id, owner: req.user._id })
         
         if (!task) {
-            res.status(404).send()
+            res.status(404).json({
+                message: 'No such task'
+            })
         }
-        res.send(task)
+        res.status(200).json({
+            task: task
+        })
     } catch (e) {
         res.status(500).send()
     }
@@ -72,33 +84,35 @@ router.patch('/tasks/:id', auth, async (req, res) => {
     const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
 
     if (!isValidOperation) {
-        return res.status(400).send({ error: 'Invalid Updates!'})
+        return res.status(400).send({ message: 'Invalid updates'})
     }
 
-    try {
-        const task = await Task.findOne({ _id: req.params.id, owner: req.user._id })
-        if (!task) {
-            res.status(404).send()
-        }
-
-        updates.forEach((update) => task[update] = req.body[update])
-        await task.save()
-
-        res.send(task)
-    } catch (e) {
-        res.status(400).send(e)
+    const task = await Task.findOne({ _id: req.params.id, owner: req.user._id })
+    if (!task) {
+        res.status(404).json({ message: 'No such task' })
     }
+
+    updates.forEach((update) => task[update] = req.body[update])
+    await task.save()
+
+    res.send({
+        message: 'Task updated succesfully',
+        task: task
+    })
 })
 
 router.delete('/tasks/:id', auth, async (req, res) => {
     try {
         const task = await Task.findOneAndDelete({ _id: req.params.id, owner: req.user._id })
-        //const task = await Task.findOne({ _id: req.params.id, owner: req.user._id })
         if (!task) {
-            res.status(404).send()
+            res.status(404).send({
+                message: 'No such task'
+            })
         }
-        // await task.delete()
-        res.send(task)
+        res.status(200).json({
+            message: 'Task deleted succesfully',
+            task: task
+        })
     } catch (e) {
         res.status(500).send()
     }
