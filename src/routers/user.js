@@ -37,7 +37,16 @@ router.post('/users',
         body('password')
             .trim()
             .not().isEmpty().withMessage('The password field is requied').bail()
-            .isLength({ min: 7 }).withMessage('Password should be of atleast 7 charachters')
+            .isLength({ min: 7 }).withMessage('Password should be of atleast 7 charachters'),
+        body('confirm_password')
+            .trim()
+            .not().isEmpty().withMessage('The confirm password field is requied').bail()
+            .custom((value, { req }) => {
+                if (value != req.body.password) {
+                    throw new Error('Confirm password should match with password')
+                }
+                return true
+            })
     ]),
     async (req, res) => {
         const user = new User(req.body)
@@ -46,7 +55,11 @@ router.post('/users',
             await user.save()
             sendWelcomeEmail(user.email, user.name)
             const token = await user.getAuthenticationToken()
-            res.status(201).send({ user, token})
+            res.status(201).send({ 
+                message: 'Account created successfully',
+                user, 
+                token
+            })
         } catch (e) {
             res.status(500).json({
                 message: 'Something went wrong'
