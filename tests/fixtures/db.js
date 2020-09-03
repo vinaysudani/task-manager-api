@@ -27,6 +27,7 @@ const userTwo = {
 
 const taskOne = {
     _id: new mongoose.Types.ObjectId(),
+    title: 'First task title',
     description: 'First task',
     completed: false,
     owner: userOne._id
@@ -34,6 +35,7 @@ const taskOne = {
 
 const taskTwo = {
     _id: new mongoose.Types.ObjectId(),
+    title: 'Second task title',
     description: 'Second task',
     completed: true,
     owner: userOne._id
@@ -41,6 +43,7 @@ const taskTwo = {
 
 const taskThree = {
     _id: new mongoose.Types.ObjectId(),
+    title: 'Third task title',
     description: 'Third task',
     completed: true,
     owner: userTwo._id

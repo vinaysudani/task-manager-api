@@ -19,10 +19,11 @@ test('Should create task for user', async () => {
         .post('/tasks')
         .set('Authorization',  `Bearer ${userOne.tokens[0].token}`)
         .send({
+            title: 'My test task',
             description: 'From my test'
         })
         .expect(201)
-    const task = await Task.findById(response.body._id)
+    const task = await Task.findById(response.body.task._id)
     expect(task).not.toBeNull()
     expect(task.completed).toEqual(false)
 })

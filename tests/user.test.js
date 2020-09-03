@@ -9,7 +9,8 @@ test('Should signup a new user', async () => {
     const response = await request(app).post('/users').send({
         name: 'Vinay',
         email: 'vinaysudani9@gmail.com',
-        password: 'Vinay123456'
+        password: 'Vinay123456',
+        confirm_password: 'Vinay123456'
     }).expect(201)
 
     const user = await User.findById(response.body.user._id)
