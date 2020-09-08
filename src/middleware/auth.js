@@ -15,7 +15,7 @@ const auth = async (req, res, next) => {
         req.user = user
         next()
     } catch (e) {
-        res.status(401).send({ message: 'Please authenticate' })
+        res.status(401).send({ message: 'Unauthorized' })
     }
 }
 
