@@ -112,7 +112,7 @@ router.post('/users/logoutAll', auth, async (req, res) => {
         await req.user.save()
 
         res.status(200).json({
-            message: 'Logged out successfully from all devices'
+            message: 'Successfully logged out from all devices'
         })
     } catch (e) {
         res.status(500).json({
