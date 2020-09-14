@@ -39,20 +39,32 @@ router.get('/tasks', auth, async (req, res) => {
         sort[parts[0]] = parts[1] === 'desc' ? -1 : 1
     }
 
+    let limit = req.query.per_page ? parseInt(req.query.per_page) : 100
+    let current_page = req.query.current_page ? parseInt(req.query.current_page) : 1
+    let skip = limit * (current_page - 1)
+
     try {
-        // const tasks = await Task.find({ owner: req.user._id })
+        let total_records = await Task.find({ owner: req.user._id, ...match }).count()
+
         await req.user.populate({
             path: 'tasks',
             match,
             options: {
-                limit: parseInt(req.query.limit),
-                skip: parseInt(req.query.skip),
+                limit: limit,
+                skip: skip,
                 sort
             }
         }).execPopulate()
         const tasks = req.user.tasks
 
-        res.send(tasks)
+        res.send({
+            pagination: {
+                total_records: total_records,
+                current_page: current_page,
+                per_page: limit,
+            },
+            tasks: tasks,
+        })
     } catch (e) {
         console.log(e)
         res.status(500).send()
