@@ -27,8 +27,10 @@ router.post('/users',
             }),
         body('age')
             .optional()
-            .toInt()
             .custom(value => {
+                if (value === '' || value === null) {
+                    return true
+                }
                 if (!(parseInt(value) > 0)) {
                     throw new Error('Age must be a positive number')
                 }
