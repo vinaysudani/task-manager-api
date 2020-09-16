@@ -125,25 +125,54 @@ router.get('/users/me', auth, async (req, res) => {
     res.status(200).json({ user: req.user })
 })
 
-router.patch('/users/me', auth ,async (req, res) => {
-    const updates = Object.keys(req.body)
-    const allowedUpdates = ['name', 'email', 'password', 'age']
-    const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
+router.patch('/users/me', auth,
+    validate([
+        body('name')
+            .optional()
+            .trim()
+            .not().isEmpty().withMessage('The name field is required'),
+        body('email')
+            .optional()
+            .trim()
+            .not().isEmpty().withMessage('The email field is requied').bail()
+            .isEmail().withMessage('Please enter valid email').bail()
+            .custom(async (value, { req }) => {
+                const user = await User.findOne({ email: value, _id: { $ne: req.user._id } })
+                if (user) {
+                    throw new Error('E-mail already in use')
+                }
+            }),
+        body('age')
+            .optional()
+            .custom(value => {
+                if (value === '' || value === null) {
+                    return true
+                }
+                if (!(parseInt(value) > 0)) {
+                    throw new Error('Age must be a positive number')
+                }
+                return true
+            })
+    ]),
+    async (req, res) => {
+        const updates = Object.keys(req.body)
+        const allowedUpdates = ['name', 'email', 'age']
+        const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
 
-    if (!isValidOperation) {
-        return res.status(400).send({ message: 'Invalid updates'})
-    }
+        if (!isValidOperation) {
+            return res.status(400).send({ message: 'Invalid updates'})
+        }
 
-    try {
-        updates.forEach((update) => req.user[update] = req.body[update])
-        await req.user.save()
-        res.status(200).json({ 
-            message: 'Profile updated sucessfully',
-            user: req.user
-        })
-    } catch (e) {
-        res.status(500).send(e)
-    }
+        try {
+            updates.forEach((update) => req.user[update] = req.body[update])
+            await req.user.save()
+            res.status(200).json({
+                message: 'Profile updated sucessfully',
+                user: req.user
+            })
+        } catch (e) {
+            res.status(500).send(e)
+        }
 })
 
 router.delete('/users/me', auth, async (req, res) => {
