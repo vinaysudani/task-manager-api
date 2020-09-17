@@ -83,6 +83,10 @@ userSchema.methods.getAuthenticationToken = async function() {
     return token
 }
 
+userSchema.methods.validPassword = async function(password) {
+    return await bcrypt.compare(password, this.password)
+}
+
 userSchema.statics.findByCredentials = async ( email, password ) => {
     const user = await User.findOne({ email })
 
@@ -97,7 +101,7 @@ userSchema.statics.findByCredentials = async ( email, password ) => {
     }
 
     return user
-} 
+}
 
 // Hash the plain text password before saving
 userSchema.pre('save', async function (next) {

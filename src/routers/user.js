@@ -127,6 +127,44 @@ router.get('/users/me', auth, async (req, res) => {
     res.status(200).json({ user: req.user })
 })
 
+router.patch('/users/me/password', auth,
+    validate([
+        body('current_password')
+            .trim()
+            .not().isEmpty().withMessage('The current password field is requied').bail()
+            .custom(async (value, { req }) => {
+                isValid = await req.user.validPassword(value)
+                if (!isValid) {
+                    throw new Error('Invalid current password')
+                }
+                return true
+            }),
+        body('new_password')
+            .trim()
+            .not().isEmpty().withMessage('The new password field is requied').bail()
+            .isLength({ min: 7 }).withMessage('Password should be of atleast 7 charachters'),
+        body('confirm_password')
+            .trim()
+            .not().isEmpty().withMessage('The confirm password field is requied').bail()
+            .custom((value, { req }) => {
+                if (value != req.body.new_password) {
+                    throw new Error('Confirm password should match with new password')
+                }
+                return true
+            })
+    ]),
+    async (req, res) => {
+        try {
+            req.user.password = req.body.new_password
+            await req.user.save()
+            res.status(200).json({
+                message: 'Password updated successfully',
+            })
+        } catch (e) {
+            res.status(500).send(e)
+        }
+})
+
 router.patch('/users/me', auth,
     validate([
         body('name')
