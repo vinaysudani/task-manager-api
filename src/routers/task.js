@@ -90,27 +90,35 @@ router.get('/tasks/:id', auth, async (req, res) => {
 })
 
 
-router.patch('/tasks/:id', auth, async (req, res) => {
-    const updates = Object.keys(req.body)
-    const allowedUpdates = ['title', 'description', 'completed']
-    const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
+router.patch('/tasks/:id',
+    auth,
+    validate([
+        body('title')
+            .optional()
+            .trim()
+            .not().isEmpty().withMessage('The title field is required'),
+    ]),
+    async (req, res) => {
+        const updates = Object.keys(req.body)
+        const allowedUpdates = ['title', 'description', 'completed']
+        const isValidOperation = updates.every((update) => allowedUpdates.includes(update))
 
-    if (!isValidOperation) {
-        return res.status(400).send({ message: 'Invalid updates'})
-    }
+        if (!isValidOperation) {
+            return res.status(400).send({ message: 'Invalid updates'})
+        }
 
-    const task = await Task.findOne({ _id: req.params.id, owner: req.user._id })
-    if (!task) {
-        res.status(404).json({ message: 'No such task' })
-    }
+        const task = await Task.findOne({ _id: req.params.id, owner: req.user._id })
+        if (!task) {
+            res.status(404).json({ message: 'No such task' })
+        }
 
-    updates.forEach((update) => task[update] = req.body[update])
-    await task.save()
+        updates.forEach((update) => task[update] = req.body[update])
+        await task.save()
 
-    res.send({
-        message: 'Task updated succesfully',
-        task: task
-    })
+        res.send({
+            message: 'Task updated succesfully',
+            task: task
+        })
 })
 
 router.delete('/tasks/:id', auth, async (req, res) => {
