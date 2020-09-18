@@ -6,8 +6,8 @@ const sendWelcomeEmail = (email, name) => {
     sgMail.send({
         to: email,
         from: 'vinaysudani9@gmail.com',
-        subject: 'Thanks for joining in!',
-        text: `Welcome to the app, ${name}. Let me know how get along with the app.`
+        subject: '[Task Manager App] Thanks for joining in',
+        text: `Welcome to the app, ${name}.`
     })
 }
 
@@ -15,8 +15,8 @@ const sendCancelationEmail = (email, name) => {
     sgMail.send({
         to: email,
         from: 'vinaysudani9@gmail.com',
-        subject: 'Sorry to see you going',
-        text: `Hi ${name}, can you please let use know whey you are leaving us ?`
+        subject: '[Task Manager App] Sorry to see you going',
+        text: `Hi ${name}, can you please let use know why you are leaving us?`
     })
 }
 
