@@ -2,7 +2,8 @@
 APIs built with Express.js, demonstrating features of Task management app with JWT Authentication.
 
 ### Frontend repository of this project
-https://github.com/vinaysudani/task-manager-frontend
+https://github.com/vinaysudani/task-manager-frontend (Vue.js)
+https://github.com/vinaysudani/task-manager-frontend-react (React)
 
 ### APIS hosted on
-https://task-manager-api-01.herokuapp.com
+http://65.1.177.145/task-manager-api
